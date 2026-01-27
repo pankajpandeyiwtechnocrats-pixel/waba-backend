@@ -16,25 +16,29 @@ import contactRoutes from "./routes/contactRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 
-
-
-
-
-
 dotenv.config();
 connectDB();
 
 const app = express();
 const server = http.createServer(app);
 
+/* ---------- CORS OPTIONS ---------- */
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://waba-frontend-w8hu.vercel.app",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+};
+
+/* ---------- MIDDLEWARE ---------- */
+app.use(cors(corsOptions));
+app.use(express.json());
 
 /* ---------- SOCKET.IO ---------- */
 export const io = new Server(server, {
-  cors: {
-    origin: "https://waba-frontend-w8hu.vercel.app",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 io.on("connection", (socket) => {
@@ -46,15 +50,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Client disconnected");
+    console.log("❌ Client disconnected:", socket.id);
   });
 });
 
-
-
-// middleware
-app.use(cors());
-app.use(express.json());
+/* ---------- ROUTES ---------- */
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -65,14 +65,13 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/agents", agentRoutes);
 
-
-// test route
+/* ---------- HEALTH CHECK ---------- */
 app.get("/", (req, res) => {
-  res.send("API running...");
+  res.send("API running 🚀");
 });
 
+/* ---------- START SERVER ---------- */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
